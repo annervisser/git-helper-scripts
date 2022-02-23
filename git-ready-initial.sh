@@ -1,47 +1,13 @@
 #!/bin/bash
 
+set -e
+
 PULL_REMOTE="upstream"
 PUSH_REMOTE="origin"
 
-NC=$(tput sgr0)
-RED=$(tput setaf 1)
-GRN=$(tput setaf 2)
-CYN=$(tput setaf 6)
-PRP=$(tput setaf 5)
-ERR=$(tput setaf 9)
-BOLD=$(tput bold)
-
-set -e
-
-function echo_green() {
-  echo "${GRN}$*${NC}"
-}
-function echo_red() {
-  echo "${RED}$*${NC}"
-}
-function echo_cyan() {
-  echo "${CYN}$*${NC}"
-}
-function echo_error() {
-  echo "${ERR}${BOLD}❗❗ ${*^^}${NC}"
-}
-
-function slugify() {
-  echo "$1" | iconv -t ascii//TRANSLIT | sed -r s/[~^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr "[:upper:]" "[:lower:]"
-}
-
-function branch_exists() {
-  git show-ref --verify --quiet "refs/heads/$1"
-}
-function branch_exists_on_remote() {
-  git show-ref --verify --quiet "refs/remotes/$1"
-}
-function git_show() {
-  git show -q "$1" \
-    --date=human \
-    --color \
-    --pretty=format:"%C(yellow)%h %C(blue)%ad %C(green)%aN %C(reset)%s" 2>/dev/null
-}
+DIRNAME=$(dirname "$(readlink -f "$0")")
+source "$DIRNAME/includes/include.sh"
+source "$DIRNAME/includes/git-utils.sh"
 
 SOURCE_BRANCH="$1"
 if [ -z "$SOURCE_BRANCH" ]; then
@@ -50,19 +16,19 @@ if [ -z "$SOURCE_BRANCH" ]; then
 fi
 
 COMMIT_SHA=$(git rev-parse --verify HEAD)
-COMMIT_MSG=$(git show -s --format=%s "$COMMIT_SHA")
+COMMIT_MSG=$(git_subject "$COMMIT_SHA")
 BRANCH_NAME=$(slugify "$COMMIT_MSG")
 
 if branch_exists "$BRANCH_NAME"; then
   echo "Branch exists"
 fi
-cat << OUT
+cat <<OUT
 ${CYN}
 ┌─────────────────┈┈
 │ ℹ️About to cherry pick commit:
-│     └▷ $(git_show "$COMMIT_SHA" || echo_error "commit not found")${CYN}
+│     └▷ $(git_show_oneline "$COMMIT_SHA" || echo_error "commit not found")${CYN}
 │ ℹ️Source branch: ${PRP}$PULL_REMOTE/$SOURCE_BRANCH${CYN}
-│     └▷ Last commit: $(git_show "$PULL_REMOTE/$SOURCE_BRANCH" || echo_error "branch not found")${CYN}
+│     └▷ Last commit: $(git_show_oneline "$PULL_REMOTE/$SOURCE_BRANCH" || echo_error "branch not found")${CYN}
 │ ℹ️Branch name: ${PRP}$PUSH_REMOTE/$BRANCH_NAME${CYN} $(branch_exists "$BRANCH_NAME" && echo_error "branch exists")${CYN}
 └────────────────────────────────────────────────┈┈
 ${NC}
