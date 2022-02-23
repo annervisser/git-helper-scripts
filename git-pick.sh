@@ -10,32 +10,37 @@ source "$DIRNAME/includes/include.sh"
 source "$DIRNAME/includes/git-utils.sh"
 
 SOURCE_BRANCH="$1"
+COMMIT_SHA=$(git rev-parse --verify HEAD)
+COMMIT_SHA_SHORT=$(git rev-parse --verify --short HEAD)
+COMMIT_MSG=$(git_subject "$COMMIT_SHA")
+BRANCH_NAME=$(slugify "$COMMIT_MSG")
+
+if branch_exists "$BRANCH_NAME"; then
+  BRANCH_NAME="$BRANCH_NAME-$COMMIT_SHA_SHORT"
+fi
+
 if [ -z "$SOURCE_BRANCH" ]; then
   echo "Source branch empty"
   exit 1
 fi
 
-COMMIT_SHA=$(git rev-parse --verify HEAD)
-COMMIT_MSG=$(git_subject "$COMMIT_SHA")
-BRANCH_NAME=$(slugify "$COMMIT_MSG")
-
-if branch_exists "$BRANCH_NAME"; then
-  echo "Branch exists"
+if git merge-base --is-ancestor "$COMMIT_SHA" "$PULL_REMOTE/$SOURCE_BRANCH"; then
+  echo "Commit already exists on $PULL_REMOTE/$SOURCE_BRANCH"
+  exit 1
 fi
+
+echo -n "${CYN}"
 cat <<OUT
-${CYN}
-┌─────────────────┈┈
-│ ℹ️About to cherry pick commit:
-│     └▷ $(git_show_oneline "$COMMIT_SHA" || echo_error "commit not found")${CYN}
-│ ℹ️Source branch: ${PRP}$PULL_REMOTE/$SOURCE_BRANCH${CYN}
-│     └▷ Last commit: $(git_show_oneline "$PULL_REMOTE/$SOURCE_BRANCH" || echo_error "branch not found")${CYN}
-│ ℹ️Branch name: ${PRP}$PUSH_REMOTE/$BRANCH_NAME${CYN} $(branch_exists "$BRANCH_NAME" && echo_error "branch exists")${CYN}
-└────────────────────────────────────────────────┈┈
-${NC}
+│ ┌─────────────────┈┈
+│ │ ℹ️About to cherry pick commit:
+│ │     └▷ $(git_show_oneline "$COMMIT_SHA" || echo_error "commit not found")${CYN}
+│ │ ℹ️Source branch: ${PRP}$PULL_REMOTE/$SOURCE_BRANCH${CYN}
+│ │     └▷ Last commit: $(git_show_oneline "$PULL_REMOTE/$SOURCE_BRANCH" || echo_error "branch not found")${CYN}
+│ │ ℹ️Branch name: ${PRP}$PUSH_REMOTE/$BRANCH_NAME${CYN} $(branch_exists "$BRANCH_NAME" && echo_error "branch exists")${CYN}
+│ └────────────────────────────────────────────────┈┈${NC}
 OUT
 echo -n "${GRN}❓ Continue? (y/N) ${NC}"
-read -n1 -r -e response && echo
-if [[ "$response" =~ ^[yY]$ ]]; then
+if confirm_continue; then
   echo_green "▶️ continuing"
 
   echo_green "▶️ Creating temporary directory"

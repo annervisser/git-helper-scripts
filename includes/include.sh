@@ -29,3 +29,9 @@ function echo_error() {
 function slugify() {
   echo "$1" | iconv -t ascii//TRANSLIT | sed -r s/[~^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr "[:upper:]" "[:lower:]"
 }
+
+function confirm_continue() {
+  PROMPT="$*"
+  read -n1 -r -e -p "$PROMPT" response && echo
+  [[ "$response" =~ ^[yY]$ ]] && return 0 || return 1
+}
