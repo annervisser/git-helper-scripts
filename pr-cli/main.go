@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
-	"pr-cli/commands"
+	"pr-cli/commands/pick"
 )
 
 func main() {
@@ -12,7 +12,7 @@ func main() {
 		Name:  "pr-cli",
 		Usage: "make an explosive entrance",
 		Commands: []*cli.Command{
-			&commands.PickCmd,
+			&pick.Cmd,
 		},
 		EnableBashCompletion: true,
 	}

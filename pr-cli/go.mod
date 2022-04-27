@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/fatih/color v1.13.0
+	github.com/gosimple/unidecode v1.0.1
 	github.com/urfave/cli/v2 v2.3.0
 )
 
