@@ -142,7 +142,6 @@ var PickCmd = cli.Command{
 		cwd = tmpDir
 
 		color.Green("▶️ cherry picking commits")
-		// TODO: is rebase a better option?
 		args := append([]string{"cherry-pick"}, pickedCommitShas...)
 		_, err = runCommand("git", args...)
 		if err != nil {
