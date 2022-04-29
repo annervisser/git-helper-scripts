@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"pr-cli/lib/shell"
 	"pr-cli/lib/slug"
+	"pr-cli/lib/util"
 	"strings"
 )
 
@@ -145,6 +146,9 @@ func getCommitsByAsking(upstreamRef string) ([]*commit, error) {
 		Message: "Which commits do you want to pick?",
 		Options: recentCommitLines,
 	}, &pickedCommitLines, survey.WithKeepFilter(true), survey.WithValidator(survey.MinItems(1)))
+
+	// getCommits(upstream/develop..) returns commits new-old we want to process them old-new
+	util.ReverseStringSlice(pickedCommitLines)
 
 	return convertLinesToCommits(pickedCommitLines), nil
 }
