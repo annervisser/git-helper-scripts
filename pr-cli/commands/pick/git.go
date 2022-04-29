@@ -38,7 +38,7 @@ func cherryPickToNewBranch(settings *gitPickSettings) error {
 	}
 
 	color.Green("▶️ Creating temporary worktree in " + tmpDir)
-	upstreamRef := settings.pullRemote + settings.upstreamBranch
+	upstreamRef := settings.pullRemote + "/" + settings.upstreamBranch
 	_, err = shell.RunCommand("git", "worktree", "add", "--no-track", "-b", settings.branchName, tmpDir, upstreamRef)
 	if err != nil {
 		return err
