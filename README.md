@@ -1,3 +1,8 @@
+> 🧪 This project has evolved into a Deno-based cli script with the functionality described below. \
+> See https://github.com/annervisser/pr-cli
+
+---
+
 Idea 1: nodejs server that connects to github webhooks
 
 New idea: local script
